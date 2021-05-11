@@ -18,6 +18,5 @@ TEST(HTMTest, BasicAddition) {
     th1.join();
     th2.join();
 
-    std::cout << x << std::endl;
-
+    ASSERT_EQ(x, 2000000);
 }
