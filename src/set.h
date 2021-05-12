@@ -2,6 +2,10 @@
 #include <concepts>
 #include <limits>
 
+#define GET_FLAG(p) static_cast<OperationFlag>((reinterpret_cast<long>(p) & 0x0003000000000000) >> 48)
+#define GET_POINTER(type, p) reinterpret_cast<type>(reinterpret_cast<long>(p) & 0x0000ffffffffffff)
+#define SET_FLAG(type, p, flag) p = reinterpret_cast<type>(reinterpret_cast<long>(p) | (static_cast<long>(flag) << 48))
+
 namespace detail {
 
 template<class T>
@@ -61,12 +65,50 @@ struct Node {
 };
 
 
+enum class OperationFlag : short {
+    NONE,
+    MARK,
+    ROTATE,
+    INSERT
+};
+
+
 template<LockFreeApplicable T>
 class Set {
 public:
     bool add(const T& value) {}
     bool remove(const T& value) {}
-    bool contains(const T& value) {}
+    bool contains(const T& value) {
+        Node *node = &root_;
+        Node *next = node->left;
+        Operation *node_op = node->op;
+        bool result = false;
+        T* node_key = &node->key;
+        while (next != nullptr) {
+            node = next;
+            node_op = node->op;
+            node_key = node->key;
+            if (value < node_key) {
+                next = node->left;
+            }
+            else if (value > node_key) {
+                next = node->right;
+            }
+            else {
+                result = true;
+                break;
+            }
+        }
+        if (result && node->deleted) {
+            if (GET_FLAG(node->op) == OperationFlag::INSERT) {
+                if (GET_POINTER(Operation*, node_op)->insert_op.new_node->key == value) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return result;
+    }
     bool isEmpty() {}
 private:
     T root_ = detail::get_max_value<T>();
