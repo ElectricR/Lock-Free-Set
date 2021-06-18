@@ -258,6 +258,34 @@ void trailing_test_routine(Set<int>& set, size_t load, unsigned id) {
     cds::threading::Manager::detachThread();
 }
 
+TEST(Smoke, Trailing) {
+    cds::Initialize();
+    cds::gc::HP hpGC{3};
+
+    Set<int> set;
+
+    cds::threading::Manager::attachThread();
+
+    set.add(10001);
+
+    std::vector<std::thread> threads;
+
+    for (unsigned i = 0; i != 98; ++i) {
+        threads.emplace_back(trailing_test_routine, std::ref(set), 10000, i);
+    }
+
+    while (trailing_finish_count != 98) {
+        EXPECT_TRUE(set.contains(10001));
+    }
+
+    for (unsigned i = 0; i != 98; ++i) {
+        threads[i].join();
+    }
+
+    cds::threading::Manager::detachThread();
+    cds::Terminate();
+}
+
 TEST(Load, Trailing) {
     cds::Initialize();
     cds::gc::HP hpGC{3};
