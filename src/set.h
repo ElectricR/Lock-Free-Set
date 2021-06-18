@@ -109,6 +109,7 @@ private:
                 if (!curr) {
                     return std::pair<cds::gc::HP::Guard, cds::gc::HP::Guard>(std::move(prev_guard), std::move(curr_guard));
                 }
+
                 next = next_guard.protect<detail::Node<T>*>(curr->next);
                 bool flag = GET_FLAG(next); 
                 next = GET_POINTER(detail::Node<T>*, next);
@@ -117,7 +118,10 @@ private:
                         break;
                     }
                     cds::gc::HP::retire(curr, detail::deleter<T>);
-                    curr = curr_guard.assign<detail::Node<T>>(next);
+                    curr = curr_guard.protect<detail::Node<T>*>(prev->next);
+                    if (GET_FLAG(curr)) {
+                        break;
+                    }
                 }
                 else {
                     if (curr->key >= key) {
