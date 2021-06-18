@@ -242,3 +242,46 @@ TEST(Load, Random) {
     ASSERT_TRUE(set.isEmpty());
     cds::Terminate();
 }
+
+static std::atomic<unsigned> trailing_finish_count = 0;
+
+void trailing_test_routine(Set<int>& set, size_t load, unsigned id) {
+    cds::threading::Manager::attachThread();
+    for (size_t i = 0; i != load; ++i) {
+        int key = 100 * id + rand() % 100;
+        EXPECT_TRUE(set.add(key));
+        EXPECT_TRUE(set.contains(key));
+        EXPECT_TRUE(set.remove(key));
+        EXPECT_FALSE(set.contains(key));
+    }
+    ++trailing_finish_count;
+    cds::threading::Manager::detachThread();
+}
+
+TEST(Load, Trailing) {
+    cds::Initialize();
+    cds::gc::HP hpGC{3};
+
+    Set<int> set;
+
+    cds::threading::Manager::attachThread();
+
+    set.add(10001);
+
+    std::vector<std::thread> threads;
+
+    for (unsigned i = 0; i != 98; ++i) {
+        threads.emplace_back(trailing_test_routine, std::ref(set), 4000000, i);
+    }
+
+    while (trailing_finish_count != 98) {
+        EXPECT_TRUE(set.contains(10001));
+    }
+
+    for (unsigned i = 0; i != 98; ++i) {
+        threads[i].join();
+    }
+
+    cds::threading::Manager::detachThread();
+    cds::Terminate();
+}
