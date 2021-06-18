@@ -1,14 +1,11 @@
-flags:
-	clang++ -std=c++20 test_flag_macros.cpp -lpthread -lgtest -lgtest_main
+all:
+	cmake -Ddebug:BOOL=0 -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild; cd build; make
 
-smoke:
-	clang++ -I./libcds -L./libcds/build/bin -std=c++20 tests/smoke_test.cpp -lcds -lpthread -lgtest -lgtest_main -o smoke_test -g -Wl,-rpath="./libcds/build/bin" -Wall -Wextra
+sane:
+	cmake -Ddebug:BOOL=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild; cd build; make
 
-smoke_sane:
-	clang++ -I./libcds -L./libcds/build/bin -std=c++20 tests/smoke_test.cpp -lcds -lpthread -lgtest -lgtest_main -o smoke_test -g -Wl,-rpath="./libcds/build/bin" -Wall -Wextra -fsanitize=thread
-
-smoke3:
-	clang++ -I./libcds -L./libcds/build/bin -std=c++20 tests/smoke_test.cpp -lcds -lpthread -lgtest -lgtest_main -o smoke_test -Wl,-rpath="./libcds/build/bin" -Wall -Wextra -O3
+ping:
+	./LockFreeSet --gtest_filter=Load.Ping*
 
 install:
 	git clone https://github.com/khizmax/libcds; \
