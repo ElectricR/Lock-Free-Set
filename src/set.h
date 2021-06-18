@@ -10,23 +10,20 @@
 
 namespace detail {
 
-template<class T>
-concept SetApplicable = true;
-
-template<SetApplicable T>
+template<std::totally_ordered T>
 struct Node {
     std::optional<T> key;
     std::atomic<Node<T>*> next = nullptr;
 };
 
-template<SetApplicable T>
+template<std::totally_ordered T>
 void deleter(void *t) {
     delete static_cast<T*>(t);
 }
 
 } //namespace detail
 
-template<detail::SetApplicable T>
+template<std::totally_ordered T>
 class Set {
 public:
 
