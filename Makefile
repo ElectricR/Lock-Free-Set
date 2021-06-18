@@ -4,6 +4,9 @@ all:
 sane:
 	cmake -Ddebug:BOOL=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild; cd build; make
 
+run:
+	./LockFreeSet
+
 ping:
 	./LockFreeSet --gtest_filter=Load.Ping*
 
