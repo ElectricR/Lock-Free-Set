@@ -18,7 +18,7 @@ endif()
 set(SOURCE_PATH tests)
 
 set(SOURCES
-	${SOURCE_PATH}/smoke_test.cpp
+	${SOURCE_PATH}/set_tests.cpp
 	)
 
 include_directories(${CMAKE_SOURCE_DIR}/libcds)
